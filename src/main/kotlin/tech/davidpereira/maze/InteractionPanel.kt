@@ -4,6 +4,8 @@ import javax.swing.JButton
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.SwingConstants
+import kotlin.math.max
+import kotlin.math.min
 
 class InteractionPanel(mazeWindow: MazeWindow) : JPanel() {
 
@@ -26,7 +28,7 @@ class InteractionPanel(mazeWindow: MazeWindow) : JPanel() {
     val buttonAddWalker = object : JButton() {
         init {
             text = "Add Walker"
-            setBounds((panelWidth - 150) / 2, 80, 150, 40)
+            setBounds((panelWidth - 150) / 2, 65, 150, 40)
             isVisible = false
             addActionListener {
                 mazeWindow.chooseStartPosition()
@@ -40,7 +42,7 @@ class InteractionPanel(mazeWindow: MazeWindow) : JPanel() {
             text = "Choose starting position:"
             horizontalAlignment = SwingConstants.CENTER
             isVisible = false
-            setBounds((panelWidth - 200) / 2, 120, 200, 40)
+            setBounds((panelWidth - 200) / 2, 110, 200, 30)
         }
     }
 
@@ -49,7 +51,7 @@ class InteractionPanel(mazeWindow: MazeWindow) : JPanel() {
             text = "(0, 0)"
             horizontalAlignment = SwingConstants.CENTER
             isVisible = false
-            setBounds((panelWidth - 200) / 2, 170, 200, 20)
+            setBounds((panelWidth - 200) / 2, 140, 200, 20)
         }
     }
 
@@ -58,7 +60,7 @@ class InteractionPanel(mazeWindow: MazeWindow) : JPanel() {
             text = "Choose goal position:"
             horizontalAlignment = SwingConstants.CENTER
             isVisible = false
-            setBounds((panelWidth - 200) / 2, 200, 200, 40)
+            setBounds((panelWidth - 200) / 2, 160, 200, 30)
         }
     }
 
@@ -67,14 +69,14 @@ class InteractionPanel(mazeWindow: MazeWindow) : JPanel() {
             text = "(0, 0)"
             horizontalAlignment = SwingConstants.CENTER
             isVisible = false
-            setBounds((panelWidth - 200) / 2, 240, 200, 20)
+            setBounds((panelWidth - 200) / 2, 190, 200, 20)
         }
     }
 
     val buttonFindPath = object : JButton() {
         init {
             text = "Find Path"
-            setBounds((panelWidth - 150) / 2, 280, 150, 40)
+            setBounds((panelWidth - 150) / 2, 225, 150, 40)
             isVisible = false
             addActionListener {
                 this.isEnabled = false
@@ -82,6 +84,20 @@ class InteractionPanel(mazeWindow: MazeWindow) : JPanel() {
             }
         }
     }
+
+    val buttonWalk = object : JButton() {
+        init {
+            text = "Walk"
+            setBounds((panelWidth - 150) / 2, 270, 150, 40)
+            isVisible = false
+            addActionListener {
+                this.isEnabled = false
+                mazeWindow.walk()
+            }
+        }
+    }
+
+    val panelWalkerVision = PanelWalkerVision(panelWidth)
 
     init {
         layout = null
@@ -94,6 +110,8 @@ class InteractionPanel(mazeWindow: MazeWindow) : JPanel() {
         add(labelChosenStartPosition)
         add(labelChosenGoalPosition)
         add(buttonFindPath)
+        add(buttonWalk)
+        add(panelWalkerVision)
     }
 
     private fun reset() {
@@ -105,6 +123,13 @@ class InteractionPanel(mazeWindow: MazeWindow) : JPanel() {
         labelChosenStartPosition.isVisible = false
         labelGoalPosition.isVisible = false
         labelChosenGoalPosition.isVisible = false
+        buttonWalk.isVisible = false
+        panelWalkerVision.isVisible = false
+    }
+
+    fun showScreen(walker: Walker?) {
+        panelWalkerVision.updateWalker(walker)
     }
 
 }
+

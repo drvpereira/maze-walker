@@ -6,11 +6,12 @@ import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-enum class CellType {
-    NORMAL, START, GOAL, OPEN, CLOSED, PATH
-}
 
 class Cell(val x: Int, val y: Int, var type: CellType = CellType.NORMAL) {
+
+    enum class CellType {
+        NORMAL, START, GOAL, OPEN, CLOSED, PATH
+    }
 
     private val walls = mutableListOf(false, false, false, false)
 
@@ -53,6 +54,7 @@ class Cell(val x: Int, val y: Int, var type: CellType = CellType.NORMAL) {
                 }
             }
         }
+
         g.color = Color.BLACK
 
         if (walls[0]) g.drawLine(x * CELL_SIZE, y * CELL_SIZE, (x + 1) * CELL_SIZE, y * CELL_SIZE)
@@ -114,6 +116,15 @@ class Cell(val x: Int, val y: Int, var type: CellType = CellType.NORMAL) {
     override fun hashCode(): Int {
         var result = x
         result = 31 * result + y
+        return result
+    }
+
+    fun getBoundaries(): List<Boundary> {
+        val result = mutableListOf<Boundary>()
+        if (walls[0]) result.add(Boundary(Point(x * CELL_SIZE, y * CELL_SIZE), Point((x + 1) * CELL_SIZE, y * CELL_SIZE)))
+        if (walls[1]) result.add(Boundary(Point((x + 1) * CELL_SIZE, y * CELL_SIZE), Point((x + 1) * CELL_SIZE, (y + 1) * CELL_SIZE)))
+        if (walls[2]) result.add(Boundary(Point(x * CELL_SIZE, (y + 1) * CELL_SIZE), Point((x + 1) * CELL_SIZE, (y + 1) * CELL_SIZE)))
+        if (walls[3]) result.add(Boundary(Point(x * CELL_SIZE, y * CELL_SIZE), Point(x * CELL_SIZE, (y + 1) * CELL_SIZE)))
         return result
     }
 

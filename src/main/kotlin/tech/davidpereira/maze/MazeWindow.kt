@@ -8,7 +8,7 @@ import javax.swing.Timer
 import javax.swing.WindowConstants
 
 const val MAZE_SIZE = 600
-const val WINDOW_WIDTH = 900
+const val WINDOW_WIDTH = 950
 const val TITLE_BAR_HEIGHT = 22
 const val WINDOW_HEIGHT = MAZE_SIZE
 const val CELL_SIZE = 30
@@ -63,6 +63,7 @@ class MazeWindow : JFrame(), ActionListener, MouseListener, MouseMotionListener 
 
     fun showMaze(g: Graphics) {
         walker?.show(g)
+        interactionPanel.showScreen(walker)
         maze.show(g)
     }
 
@@ -74,11 +75,11 @@ class MazeWindow : JFrame(), ActionListener, MouseListener, MouseMotionListener 
     private fun highlight(x: Int, y: Int) {
 
         if (choosingStartPosition) {
-            val currentCell = Cell(x, y, CellType.START)
+            val currentCell = Cell(x, y, Cell.CellType.START)
             mazePanel.startPosition = currentCell
             interactionPanel.labelChosenStartPosition.text = currentCell.toString()
         } else if (choosingGoalPosition) {
-            val currentCell = Cell(x, y, CellType.GOAL)
+            val currentCell = Cell(x, y, Cell.CellType.GOAL)
             mazePanel.goalPosition = currentCell
             interactionPanel.labelChosenGoalPosition.text = currentCell.toString()
         }
@@ -93,7 +94,13 @@ class MazeWindow : JFrame(), ActionListener, MouseListener, MouseMotionListener 
                 }
             } else {
                 walker?.createPath()
+                interactionPanel.buttonWalk.isVisible = true
+                interactionPanel.panelWalkerVision.isVisible = true
             }
+        }
+
+        if (walker?.walking == true) {
+            walker?.update()
         }
 
         repaint()
@@ -142,8 +149,8 @@ class MazeWindow : JFrame(), ActionListener, MouseListener, MouseMotionListener 
             highlight(e.x / CELL_SIZE, (e.y - TITLE_BAR_HEIGHT) / CELL_SIZE)
     }
 
-}
+    fun walk() {
+        walker?.walk()
+    }
 
-fun main() {
-    SwingUtilities.invokeLater { MazeWindow() }
 }

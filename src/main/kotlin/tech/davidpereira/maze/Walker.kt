@@ -1,7 +1,10 @@
 package tech.davidpereira.maze
 
+import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
+import kotlin.math.PI
+import kotlin.math.atan2
 
 class Walker(private val maze: Maze) {
 
@@ -18,15 +21,63 @@ class Walker(private val maze: Maze) {
     private var h: MutableMap<Cell, Int> = maze.grid.flatten().map { it to 0 }.toMap().toMutableMap()
     private var vh: MutableMap<Cell, Int> = maze.grid.flatten().map { it to 0 }.toMap().toMutableMap()
 
+    private var currentCell: Cell? = null
+    private var nextCell: Cell? = null
+
+    private var x = 0
+    private var y = 0
+    private var vx = 0
+    private var vy = 0
+
+    var walking = false
+    var angle: Int = 0
+    var newAngle: Int = 0
+
+    var scene = mutableListOf<Double>()
+
     init {
         lastCheckedNode = start
         openSet.add(start!!)
     }
 
     fun show(g: Graphics) {
-        path.show(g as Graphics2D)
-        openSet.map { Cell(it.x, it.y, CellType.OPEN) }.forEach { it.show(g) }
-        closedSet.map { Cell(it.x, it.y, CellType.CLOSED) }.forEach { it.show(g) }
+        if (!walking) {
+            path.show(g as Graphics2D)
+            openSet.map { Cell(it.x, it.y, Cell.CellType.OPEN) }.forEach { it.show(g) }
+            closedSet.map { Cell(it.x, it.y, Cell.CellType.CLOSED) }.forEach { it.show(g) }
+        } else {
+            lookAt(maze.getBoundaries(), g)
+            g.color = Color(249, 166, 2)
+            g.fillOval(x, y, CELL_SIZE / 2, CELL_SIZE / 2)
+        }
+    }
+
+    private fun lookAt(walls: List<Boundary>, g: Graphics) {
+        scene.clear()
+        for (i in (angle - 35)..(angle + 35)) {
+            val ray = Ray(Point(x + CELL_SIZE / 4, y + CELL_SIZE / 4), i.toDouble() * PI / 180.0)
+            var minDistance = Double.MAX_VALUE
+            var closest: Point? = null
+
+            walls.forEach {
+                val point = ray.cast(it)
+                if (point != null) {
+                    val dist = ray.pos.dist(point)
+                    if (dist < minDistance) {
+                        minDistance = dist
+                        closest = point
+                    }
+                }
+            }
+
+            if (closest != null) {
+                g.color = Color(250, 218, 94, 100)
+                g.drawLine(x + CELL_SIZE / 4, y + CELL_SIZE / 4, closest!!.x, closest!!.y)
+            }
+
+            scene.add(minDistance)
+        }
+
     }
 
     fun findPath(): Boolean {
@@ -55,7 +106,9 @@ class Walker(private val maze: Maze) {
                     //but improves the look for things like games or more closely
                     //approximates the real shortest path if using grid sampled data for
                     //planning natural paths.
-                    if ((g[openSet[i]] ?: 0) == (g[openSet[winner]] ?: 0) && (vh[openSet[i]] ?: 0) < (vh[openSet[winner]] ?: 0)) {
+                    if ((g[openSet[i]] ?: 0) == (g[openSet[winner]] ?: 0) && (vh[openSet[i]]
+                            ?: 0) < (vh[openSet[winner]] ?: 0)
+                    ) {
                         winner = i
                     }
                 }
@@ -128,5 +181,68 @@ class Walker(private val maze: Maze) {
         closedSet.clear()
         path.clear()
     }
+
+    fun walk() {
+        currentCell = path.initialPosition()
+
+        x = currentCell!!.x * CELL_SIZE + CELL_SIZE / 4
+        y = currentCell!!.y * CELL_SIZE + CELL_SIZE / 4
+
+        nextCell = path.nextCell(x, y)
+
+        val (nvx, nvy) = getVelocity()
+        vx = nvx
+        vy = nvy
+
+        angle = ((atan2((nextCell!!.y - currentCell!!.y).toDouble(),
+            (nextCell!!.x - currentCell!!.x).toDouble()) * 180.0 / PI).toInt() + 360) % 360
+        newAngle = angle
+        print(angle)
+
+        walking = true
+    }
+
+    fun update() {
+        var nextCellX = nextCell!!.x * CELL_SIZE + CELL_SIZE / 4
+        var nextCellY = nextCell!!.y * CELL_SIZE + CELL_SIZE / 4
+
+        if (x == nextCellX && y == nextCellY) {
+            currentCell = nextCell
+            nextCell = path.nextCell(x, y)
+
+            val (nvx, nvy) = getVelocity()
+
+            vx = 3 * nvx
+            vy = 3 * nvy
+
+            newAngle = ((atan2((path.nextCell(x, y).y - currentCell!!.y).toDouble(),
+                (path.nextCell(x, y).x - currentCell!!.x).toDouble()) * 180.0 / PI).toInt() + 360) % 360
+
+        }
+
+        if (angle != newAngle) {
+
+            if ((angle == 270 && newAngle == 0)) {
+                newAngle = 360
+            } else if ((angle == 0 && newAngle == 270)) {
+                angle = 360
+            }
+
+            if (newAngle < angle)
+                angle = angle - 5
+            else
+                angle = angle + 5
+
+        } else {
+            angle %= 360
+            newAngle %= 360
+            x += vx
+            y += vy
+        }
+
+    }
+
+    private fun getVelocity(): Pair<Int, Int> =
+        Pair(nextCell!!.x - currentCell!!.x, nextCell!!.y - currentCell!!.y)
 
 }

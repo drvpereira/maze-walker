@@ -16,12 +16,16 @@ open class Maze(val grid: Array<Array<Cell>>) {
 
     fun setStartPosition(x: Int, y: Int) {
         start = grid[y][x]
-        start?.type = CellType.START
+        start?.type = Cell.CellType.START
     }
 
     fun setGoalPosition(x: Int, y: Int) {
         end = grid[y][x]
-        end?.type = CellType.GOAL
+        end?.type = Cell.CellType.GOAL
+    }
+
+    fun getBoundaries(): List<Boundary> {
+        return grid.flatten().map { it.getBoundaries() } .flatten()
     }
 
 }

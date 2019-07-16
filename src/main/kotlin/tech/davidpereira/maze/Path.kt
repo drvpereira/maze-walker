@@ -20,20 +20,22 @@ class Path {
         g.stroke = BasicStroke(1.0f)
     }
 
-    fun add(cell: Cell) {
-        path.add(cell)
+    fun add(cell: Cell) = path.add(cell)
+
+    fun contains(cell: Cell): Boolean = path.contains(cell)
+
+    fun clear() = path.clear()
+
+    fun isEmpty(): Boolean = path.isEmpty()
+
+    fun initialPosition(): Cell = path.last()
+
+    fun nextCell(x: Int, y: Int) : Cell {
+        val currentCellIndex = currentCellIndex(x, y)
+        val currentCell = path[currentCellIndex]
+        return if (currentCellIndex > 0 && currentCellIndex < path.size) path[currentCellIndex - 1] else currentCell
     }
 
-    fun contains(cell: Cell): Boolean {
-        return path.contains(cell)
-    }
-
-    fun clear() {
-        path.clear()
-    }
-
-    fun isEmpty(): Boolean {
-        return path.isEmpty()
-    }
+    private fun currentCellIndex(x: Int, y: Int) : Int = path.indexOf(Cell(x / CELL_SIZE, y / CELL_SIZE))
 
 }
