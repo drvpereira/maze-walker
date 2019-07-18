@@ -1,6 +1,5 @@
 package tech.davidpereira.maze
 
-import java.awt.Color
 import java.awt.Graphics
 import kotlin.math.abs
 import kotlin.math.pow
@@ -8,10 +7,6 @@ import kotlin.math.sqrt
 
 
 class Cell(val x: Int, val y: Int, var type: CellType = CellType.NORMAL) {
-
-    enum class CellType {
-        NORMAL, START, GOAL, OPEN, CLOSED, PATH
-    }
 
     private val walls = mutableListOf(false, false, false, false)
 
@@ -25,42 +20,7 @@ class Cell(val x: Int, val y: Int, var type: CellType = CellType.NORMAL) {
     }
 
     fun show(g: Graphics) {
-        when (type) {
-            CellType.OPEN -> {
-                g.color = Color.GREEN
-                g.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-            }
-            CellType.CLOSED -> {
-                g.color = Color.RED
-                g.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-            }
-            CellType.PATH -> {
-                g.color = Color.MAGENTA
-                g.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-            }
-            CellType.START -> {
-                g.color = Color.RED
-                g.fillOval(x * CELL_SIZE + CELL_SIZE / 4, y * CELL_SIZE + CELL_SIZE / 4, CELL_SIZE / 2, CELL_SIZE / 2)
-            }
-            CellType.GOAL -> repeat(5) { j ->
-                repeat(5) { i ->
-                    g.color = if ((i + j) % 2 == 0) Color.BLACK else Color.WHITE
-                    g.fillRect(
-                        x * CELL_SIZE + j * CELL_SIZE / 5,
-                        y * CELL_SIZE + i * CELL_SIZE / 5,
-                        CELL_SIZE / 5,
-                        CELL_SIZE / 5
-                    )
-                }
-            }
-        }
-
-        g.color = Color.BLACK
-
-        if (walls[0]) g.drawLine(x * CELL_SIZE, y * CELL_SIZE, (x + 1) * CELL_SIZE, y * CELL_SIZE)
-        if (walls[1]) g.drawLine((x + 1) * CELL_SIZE, y * CELL_SIZE, (x + 1) * CELL_SIZE, (y + 1) * CELL_SIZE)
-        if (walls[2]) g.drawLine(x * CELL_SIZE, (y + 1) * CELL_SIZE, (x + 1) * CELL_SIZE, (y + 1) * CELL_SIZE)
-        if (walls[3]) g.drawLine(x * CELL_SIZE, y * CELL_SIZE, x * CELL_SIZE, (y + 1) * CELL_SIZE)
+        type.show(this, g)
     }
 
     fun removeWallTo(chosenCell: Cell) {
@@ -89,12 +49,13 @@ class Cell(val x: Int, val y: Int, var type: CellType = CellType.NORMAL) {
         return result
     }
 
-    fun manhattanDistance(b: Cell): Int {
-        return abs(x - b.x) + abs(y - b.y)
-    }
-
-    fun euclidianDistance(b: Cell): Int {
-        return sqrt((x - b.x).toDouble().pow(2) + (y - b.y).toDouble().pow(2)).toInt()
+    fun getBoundaries(): List<Boundary> {
+        val result = mutableListOf<Boundary>()
+        if (walls[0]) result.add(Boundary(Point(x * CELL_SIZE, y * CELL_SIZE), Point((x + 1) * CELL_SIZE, y * CELL_SIZE)))
+        if (walls[1]) result.add(Boundary(Point((x + 1) * CELL_SIZE, y * CELL_SIZE), Point((x + 1) * CELL_SIZE, (y + 1) * CELL_SIZE)))
+        if (walls[2]) result.add(Boundary(Point(x * CELL_SIZE, (y + 1) * CELL_SIZE), Point((x + 1) * CELL_SIZE, (y + 1) * CELL_SIZE)))
+        if (walls[3]) result.add(Boundary(Point(x * CELL_SIZE, y * CELL_SIZE), Point(x * CELL_SIZE, (y + 1) * CELL_SIZE)))
+        return result
     }
 
     override fun toString(): String {
@@ -119,13 +80,16 @@ class Cell(val x: Int, val y: Int, var type: CellType = CellType.NORMAL) {
         return result
     }
 
-    fun getBoundaries(): List<Boundary> {
-        val result = mutableListOf<Boundary>()
-        if (walls[0]) result.add(Boundary(Point(x * CELL_SIZE, y * CELL_SIZE), Point((x + 1) * CELL_SIZE, y * CELL_SIZE)))
-        if (walls[1]) result.add(Boundary(Point((x + 1) * CELL_SIZE, y * CELL_SIZE), Point((x + 1) * CELL_SIZE, (y + 1) * CELL_SIZE)))
-        if (walls[2]) result.add(Boundary(Point(x * CELL_SIZE, (y + 1) * CELL_SIZE), Point((x + 1) * CELL_SIZE, (y + 1) * CELL_SIZE)))
-        if (walls[3]) result.add(Boundary(Point(x * CELL_SIZE, y * CELL_SIZE), Point(x * CELL_SIZE, (y + 1) * CELL_SIZE)))
-        return result
+    fun getCenter(): Point {
+        return Point(x * CELL_SIZE + CELL_SIZE / 2, y * CELL_SIZE + CELL_SIZE / 2)
+    }
+
+    fun velocityTo(nextCell: Cell): Vector {
+        return Vector((nextCell.x - x).toDouble(), (y - nextCell.y).toDouble())
+    }
+
+    fun getPosition(): Point {
+        return Point(x * CELL_SIZE, y * CELL_SIZE)
     }
 
 }

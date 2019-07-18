@@ -1,5 +1,7 @@
-package tech.davidpereira.maze
+package tech.davidpereira.maze.gui
 
+import tech.davidpereira.maze.Cell
+import tech.davidpereira.maze.MAZE_SIZE
 import java.awt.Graphics
 import javax.swing.JPanel
 

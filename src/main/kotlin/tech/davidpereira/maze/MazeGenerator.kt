@@ -12,7 +12,7 @@ class MazeGenerator(private val width: Int, private val height: Int) {
         reset()
     }
 
-    fun reset() {
+    private fun reset() {
         grid = Array(height) { y -> Array(width) { x -> Cell(x, y) } }
         stack = ArrayDeque()
         currentCell = grid[0][0]
@@ -24,16 +24,13 @@ class MazeGenerator(private val width: Int, private val height: Int) {
         currentCell.visited = true
 
         while (grid.any { it.any { !it.visited } }) {
-
             val chosenNeighbour = chooseNeighbour()
 
             if (chosenNeighbour != null) {
-
                 chosenNeighbour.visited = true
                 stack.push(currentCell)
                 currentCell.removeWallTo(chosenNeighbour)
                 currentCell = chosenNeighbour
-
             } else if (!stack.isEmpty()) {
                 currentCell = stack.pop()
             }

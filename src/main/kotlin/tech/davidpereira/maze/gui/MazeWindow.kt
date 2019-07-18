@@ -1,19 +1,11 @@
-package tech.davidpereira.maze
+package tech.davidpereira.maze.gui
 
+import tech.davidpereira.maze.*
 import java.awt.Graphics
 import java.awt.event.*
 import javax.swing.JFrame
-import javax.swing.SwingUtilities
 import javax.swing.Timer
 import javax.swing.WindowConstants
-
-const val MAZE_SIZE = 600
-const val WINDOW_WIDTH = 950
-const val TITLE_BAR_HEIGHT = 22
-const val WINDOW_HEIGHT = MAZE_SIZE
-const val CELL_SIZE = 30
-const val PANEL_PADDING = 10
-const val FPS = 30
 
 class MazeWindow : JFrame(), ActionListener, MouseListener, MouseMotionListener {
 
@@ -21,13 +13,15 @@ class MazeWindow : JFrame(), ActionListener, MouseListener, MouseMotionListener 
     private val interactionPanel = InteractionPanel(this)
 
     private val mazeGenerator = MazeGenerator(MAZE_SIZE / CELL_SIZE, MAZE_SIZE / CELL_SIZE)
-    private var maze: Maze = EmptyMaze(MAZE_SIZE / CELL_SIZE, MAZE_SIZE / CELL_SIZE)
+    private var maze: Maze = EmptyMaze(MAZE_SIZE / CELL_SIZE,MAZE_SIZE / CELL_SIZE)
+
+    private var pathFinder: PathFinder? = null
     private var walker: Walker? = null
 
     private var choosingStartPosition = false
     private var choosingGoalPosition = false
     private var findingPath = false
-    private var pathFound = false
+    private var walking = false
 
     init {
         title = "Maze Walker"
@@ -47,60 +41,64 @@ class MazeWindow : JFrame(), ActionListener, MouseListener, MouseMotionListener 
     }
 
     fun generateMaze() {
-        findingPath = false
-        pathFound = false
         mazePanel.startPosition = null
         mazePanel.goalPosition = null
         maze = mazeGenerator.generate()
-        walker?.reset()
+
+        choosingStartPosition = false
+        choosingGoalPosition = false
+        findingPath = false
+        walking = false
+
+        pathFinder = null
+        walker = null
     }
 
     fun chooseStartPosition() {
         choosingStartPosition = true
-        interactionPanel.labelStartingPosition.isVisible = true
-        interactionPanel.labelChosenStartPosition.isVisible = true
     }
 
     fun showMaze(g: Graphics) {
-        walker?.show(g)
-        interactionPanel.showScreen(walker)
+        pathFinder?.show(g)
         maze.show(g)
+
+        val scene = walker?.lookAt()
+        walker?.show(scene, g)
+        if (scene != null) {
+            interactionPanel.showScreen(scene)
+        }
     }
 
     fun findPath() {
-        walker = Walker(maze)
+        pathFinder = PathFinder(maze)
         findingPath = true
     }
 
     private fun highlight(x: Int, y: Int) {
 
         if (choosingStartPosition) {
-            val currentCell = Cell(x, y, Cell.CellType.START)
+            val currentCell = Cell(x, y, CellType.START)
             mazePanel.startPosition = currentCell
-            interactionPanel.labelChosenStartPosition.text = currentCell.toString()
+            interactionPanel.setLabelChosenStartPosition(currentCell.toString())
         } else if (choosingGoalPosition) {
-            val currentCell = Cell(x, y, Cell.CellType.GOAL)
+            val currentCell = Cell(x, y, CellType.GOAL)
             mazePanel.goalPosition = currentCell
-            interactionPanel.labelChosenGoalPosition.text = currentCell.toString()
+            interactionPanel.setLabelChosenGoalPosition(currentCell.toString())
         }
 
     }
 
     override fun actionPerformed(e: ActionEvent) {
         if (findingPath) {
-            if (!pathFound) {
-                if (walker?.findPath() == true) {
-                    pathFound = true
-                }
-            } else {
-                walker?.createPath()
-                interactionPanel.buttonWalk.isVisible = true
-                interactionPanel.panelWalkerVision.isVisible = true
+            pathFinder?.findPath()
+            findingPath = !(pathFinder?.foundPath ?: false)
+        } else if (!walking){
+            if (pathFinder?.foundPath == true && walker == null) {
+                interactionPanel.enableWalkingPanel()
+                walker = Walker(maze, pathFinder?.path!!)
             }
-        }
-
-        if (walker?.walking == true) {
-            walker?.update()
+        } else {
+            walker?.walk()
         }
 
         repaint()
@@ -117,16 +115,13 @@ class MazeWindow : JFrame(), ActionListener, MouseListener, MouseMotionListener 
     override fun mouseClicked(e: MouseEvent) {
         if (choosingGoalPosition) {
             maze.setGoalPosition(mazePanel.goalPosition!!.x, mazePanel.goalPosition!!.y)
-            interactionPanel.buttonFindPath.isVisible = true
-            interactionPanel.buttonFindPath.isEnabled = true
+            interactionPanel.enableButtonFindPath()
             choosingStartPosition = false
             choosingGoalPosition = false
         }
 
         if (choosingStartPosition) {
             maze.setStartPosition(mazePanel.startPosition!!.x, mazePanel.startPosition!!.y)
-            interactionPanel.labelGoalPosition.isVisible = true
-            interactionPanel.labelChosenGoalPosition.isVisible = true
             choosingStartPosition = false
             choosingGoalPosition = true
         }
@@ -150,7 +145,7 @@ class MazeWindow : JFrame(), ActionListener, MouseListener, MouseMotionListener 
     }
 
     fun walk() {
-        walker?.walk()
+        walking = true
     }
 
 }

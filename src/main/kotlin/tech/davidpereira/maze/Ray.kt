@@ -1,19 +1,22 @@
 package tech.davidpereira.maze
 
-class Ray(val pos: Point, angle: Double) {
+import kotlin.math.cos
+import kotlin.math.round
 
-    private var dir = Vector.fromAngle(angle)
+class Ray(val pos: Point, angle: Angle) {
+
+    private var dir = Vector.unitaryWithAngle(angle)
 
     fun cast(boundary: Boundary): Point? {
-        val x1 = boundary.a.x.toDouble()
-        val y1 = boundary.a.y.toDouble()
-        val x2 = boundary.b.x.toDouble()
-        val y2 = boundary.b.y.toDouble()
+        val x1 = boundary.from.x.toDouble()
+        val y1 = boundary.from.y.toDouble()
+        val x2 = boundary.to.x.toDouble()
+        val y2 = boundary.to.y.toDouble()
 
         val x3 = pos.x.toDouble()
         val y3 = pos.y.toDouble()
         val x4 = pos.x + dir.x
-        val y4 = pos.y + dir.y
+        val y4 = pos.y - dir.y
 
         val den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
 
@@ -23,7 +26,7 @@ class Ray(val pos: Point, angle: Double) {
         val u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / den
 
         if (t > 0.0 && t < 1.0 && u > 0.0) {
-            return Point((x1 + t * (x2 - x1)).toInt(), (y1 + t * (y2 - y1)).toInt())
+            return Point(round(x1 + t * (x2 - x1)).toInt(), round(y1 + t * (y2 - y1)).toInt())
         } else {
             return null
         }

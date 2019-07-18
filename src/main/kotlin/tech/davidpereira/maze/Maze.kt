@@ -1,9 +1,6 @@
 package tech.davidpereira.maze
 
 import java.awt.Graphics
-import kotlin.math.abs
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 open class Maze(val grid: Array<Array<Cell>>) {
 
@@ -16,12 +13,12 @@ open class Maze(val grid: Array<Array<Cell>>) {
 
     fun setStartPosition(x: Int, y: Int) {
         start = grid[y][x]
-        start?.type = Cell.CellType.START
+        start?.type = CellType.START
     }
 
     fun setGoalPosition(x: Int, y: Int) {
         end = grid[y][x]
-        end?.type = Cell.CellType.GOAL
+        end?.type = CellType.GOAL
     }
 
     fun getBoundaries(): List<Boundary> {
