@@ -1,6 +1,9 @@
 package tech.davidpereira.maze.gui
 
-import tech.davidpereira.maze.*
+import tech.davidpereira.maze.MAZE_SIZE
+import tech.davidpereira.maze.PANEL_PADDING
+import tech.davidpereira.maze.Scene
+import tech.davidpereira.maze.VIEWER_PANEL_WIDTH
 import javax.swing.JButton
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -10,7 +13,7 @@ class InteractionPanel(private val mazeWindow: MazeWindow) : JPanel() {
 
     private val panelX = MAZE_SIZE + PANEL_PADDING
     private val panelY = PANEL_PADDING
-    private val panelWidth = WINDOW_WIDTH - MAZE_SIZE - 2 * PANEL_PADDING
+    private val panelWidth = VIEWER_PANEL_WIDTH
     private val panelHeight = MAZE_SIZE - 2 * PANEL_PADDING
 
     private val buttonGenerateMaze = object : JButton() {

@@ -2,8 +2,9 @@ package tech.davidpereira.maze
 
 import java.awt.Color
 import java.awt.Graphics
+import kotlin.math.cos
 
-class Walker(private val maze: Maze, val path: Path) {
+class Walker(private val maze: Maze, private val path: Path) {
 
     private var currentCell: Cell
     private var nextCell: Cell
@@ -29,24 +30,27 @@ class Walker(private val maze: Maze, val path: Path) {
     fun show(scene: Scene?, g: Graphics) {
         g.color = Color(249, 166, 2)
         g.fillOval(position.x - CELL_SIZE / 4, position.y - CELL_SIZE / 4, CELL_SIZE / 2, CELL_SIZE / 2)
-
-        if (scene != null) {
-            g.color = Color(250, 218, 94, 100)
-            scene.scene.forEach { g.drawLine(position.x, position.y, it.x.toInt(), it.y.toInt()) }
-        }
+        scene?.showRays(g)
     }
 
     fun lookAt(): Scene {
         val walls = maze.getBoundaries()
-        val scene = getListOfAngles().map { Ray(position, it) }
-                .mapNotNull { ray -> walls.mapNotNull { ray.cast(it) }.minBy { ray.pos.dist(it) } }
-            .map { it.toVector() }.distinct()
+        return getListOfAngles().map { Ray(position, it) }
+                .mapNotNull { ray -> walls.mapNotNull { ray.cast(it) }
+                    .map {
+                        val a = ray.angle.getRadians() - this.angle.getRadians()
+                        var d = position.dist(it) * cos(a)
+                        Pair(it, d)
+                    }
+                    .minBy { it.second }
 
-        return Scene(position, scene)
+                }
+            .distinct().let { Scene(position, it) }
     }
 
     private fun getListOfAngles(): List<Angle> {
-        val resolution = Angle.withRadians(0.005)
+        val numberOfStripes = VIEWER_PANEL_WIDTH / VIEWER_RESOLUTION
+        val resolution = Angle.withRadians(fov.getRadians() / numberOfStripes)
         var result = mutableListOf<Angle>()
 
         var current = angle.getRadians() - fov.getRadians() / 2

@@ -2,18 +2,20 @@ package tech.davidpereira.maze
 
 import java.awt.Color
 import java.awt.Graphics
-import kotlin.math.*
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
 
-class Scene(private val position: Point, val scene: List<Vector>) {
+class Scene(private val position: Point, private val scene: List<Pair<Point, Double>>) {
 
-    fun show(panelWidth: Int, panelHeight: Int, g: Graphics) {
+    fun showScene(panelWidth: Int, panelHeight: Int, g: Graphics) {
         if (scene.isNotEmpty()) {
             val sceneW = MAZE_SIZE / 5.0
             val w = ceil((panelWidth.toDouble() / scene.size.toDouble())).toInt()
 
             scene.reversed().forEachIndexed { i, it ->
-                var angle = it.getAngle().getRadians() - position.toVector().getAngle().getRadians()
-                val value = it.toPoint().dist(position) * cos(angle)
+                val value = it.second
 
                 val b = map(value * value, 0.0, sceneW * sceneW, 255.0, 0.0).toInt()
                 val h = map(value, 0.0, sceneW, panelHeight.toDouble(), 0.0)
@@ -25,6 +27,11 @@ class Scene(private val position: Point, val scene: List<Vector>) {
             }
         }
 
+    }
+
+    fun showRays(g: Graphics) {
+        g.color = Color(250, 218, 94, 100)
+        scene.forEach { g.drawLine(position.x, position.y, it.first.x, it.first.y) }
     }
 
     private fun map(value: Double, start1: Double, stop1: Double, start2: Double, stop2: Double): Double {

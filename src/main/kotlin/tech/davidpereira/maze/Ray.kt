@@ -1,9 +1,8 @@
 package tech.davidpereira.maze
 
-import kotlin.math.cos
 import kotlin.math.round
 
-class Ray(val pos: Point, angle: Angle) {
+class Ray(val pos: Point, val angle: Angle) {
 
     private var dir = Vector.unitaryWithAngle(angle)
 

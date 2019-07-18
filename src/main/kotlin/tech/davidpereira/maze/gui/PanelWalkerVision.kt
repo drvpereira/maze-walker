@@ -1,7 +1,6 @@
 package tech.davidpereira.maze.gui
 
 import tech.davidpereira.maze.Scene
-import tech.davidpereira.maze.Walker
 import java.awt.Color
 import java.awt.Graphics
 import javax.swing.JPanel
@@ -24,7 +23,7 @@ class PanelWalkerVision(private val panelWidth: Int) : JPanel() {
     }
 
     override fun paintComponent(g: Graphics) {
-        scene?.show(panelWidth, panelHeight, g)
+        scene?.showScene(panelWidth, panelHeight, g)
     }
 
 }
